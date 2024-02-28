@@ -4,85 +4,110 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	// "strings"
 )
 
 type Task struct {
 	id int 
 	title string
-	description string
 	done bool
 }
-
-var tasksList = []Task {}
 
 func main() {
 	Init()
 	CommandHandler()
 }
 
-func CreateTask() {
-	task := Task{}
+var tasksList = []Task {}
 
-	fmt.Print("Enter task title: ")
-	reader := bufio.NewReader(os.Stdin)
-	taskTitle, err := reader.ReadString('\n')
-	// TODO : wait for user input
-	if err != nil{
-		fmt.Print("Enter task title: ")
-		return
-	}
-	task.title = taskTitle
-
-	task.description = "description"
-	task.id = 3
-	task.done = false
-
-	AddTask(task)
+func createId() int{
+	return len(tasksList) + 1
 }
 
-func AddTask(task Task){
+func createFakeTask(title string, done bool){
+	task := Task {
+		id:  createId(),
+		title: title ,
+		done: done,
+	}
 	tasksList = append(tasksList, task)
-	ViewAllTasks()
 }
 
 func Init(){
-	fmt.Printf("Todo List \n")
-	task1 := Task {
-		id: 1,
-		title: "Meeting" ,
-		description: "start meeting without Lionel",
-		done: true,
-	}
-	task2 := Task {
-		id: 2,
-		title: "Cooking" ,
-		description: "cook smoked chicken !",
-		done: false,
-	}
-	tasksList = append(tasksList, task1, task2)
+	createFakeTask("Meeting", false)
+	createFakeTask("Get food", false)
+	createFakeTask("Call Lionel Ensfelder", true)
+	createFakeTask("Launch with team", false)
+	createFakeTask("Learn GO !", true)
 }
 
 func CommandHandler(){
 	var userInput string
 	fmt.Println("What do you want to do ?")
-	fmt.Scan(&userInput)
+	fmt.Scanln(&userInput)
 	if userInput == "list"{
 		ViewAllTasks()
 		}else if userInput == "add"{
 			CreateTask()
+			}else if userInput == "del"{
+				DeleteTask()
 			}else{
-				fmt.Print("Enter a valid command (list, add, update, delete).")
+				fmt.Println("Enter a valid command (list, add, update, delete).")
+				CommandHandler()
 			}
+}
+
+func DeleteTask(){
+	var id int
+	fmt.Print("id : ")
+	fmt.Scan(&id)
+	for i, v := range tasksList {
+		if v.id == id {
+			tasksList = append(tasksList[:i], tasksList[i+1:]...)
+			ViewAllTasks()
+			CommandHandler()
+		}
+	}
+}
+
+func CreateTask() {
+	task := Task{}
+	task.id =  createId()
+	task.done = false
+	
+	fmt.Println("Title : ")
+	reader := bufio.NewReader(os.Stdin)
+	taskTitle, _ := reader.ReadString('\n')
+	fmt.Println("task.title and taskTitle lenght : ", len(task.title), len(taskTitle))
+	task.title = taskTitle
+
+	if len(task.title) == 2 {
+		fmt.Println("task haven't title !")
+		CreateTask()
+	}else{
+		AddTask(task)
+	}
+	CommandHandler()
+}
+
+func AddTask(task Task){
+	tasksList = append(tasksList, task)
+	ViewAllTasks()
+	CommandHandler()
 }
 
 func ViewAllTasks(){
 	fmt.Println("Tasks List:")
 	for _, t := range tasksList {
-		fmt.Println("ID:", t.id)
-		fmt.Println("Title:", t.title)
-		fmt.Println("Description:", t.description)
-		fmt.Println("Done:", t.done)
-		fmt.Println()
+		var checkbox string
+		var color string
+		if !t.done {
+			color = "\033[31m"
+			checkbox = "[ ]"
+			}else{
+				color = "\033[32m"
+			checkbox = "[x]"
+		}
+		fmt.Println(color + checkbox, t.id, t.title + "\033[0m")
 	}
+	CommandHandler()
 }
