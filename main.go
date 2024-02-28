@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"math/rand"
 )
 
 type Task struct {
@@ -19,8 +20,19 @@ func main() {
 
 var tasksList = []Task {}
 
-func createId() int{
-	return len(tasksList) + 1
+func RandomId() int {
+	return rand.Int() / 100000000000000000
+}
+
+func createId() int {
+	// TODO : fix duplicate id by display by index and delete id
+	id := RandomId()
+	isIdExist := GetTaskById(id)
+	if isIdExist != -1 {
+		return id
+	}else{
+		return RandomId()
+	}
 }
 
 func createFakeTask(title string, done bool){
@@ -46,27 +58,72 @@ func CommandHandler(){
 	fmt.Scanln(&userInput)
 	if userInput == "list"{
 		ViewAllTasks()
-		}else if userInput == "add"{
-			CreateTask()
-			}else if userInput == "del"{
-				DeleteTask()
-			}else{
-				fmt.Println("Enter a valid command (list, add, update, delete).")
-				CommandHandler()
-			}
+	} else if userInput == "add"{
+		CreateTask()
+	} else if userInput == "del"{
+		DeleteTask()
+	} else if userInput == "tog"{
+		ToggleTaskState()
+	} else if userInput == "upd"{
+		UpdateTaskTitle()
+	}else{
+		fmt.Println("Enter a valid command (list, add, del, tog, upd).")
+		CommandHandler()
+	}
+}
+
+func GetTaskById(id int) int{
+	for i, v := range tasksList {
+		if v.id == id {
+			return i
+		}
+	}
+	return -1
+}
+
+func UpdateTaskTitle(){
+	// TODO : fix bug user cannot type new title
+	var id int
+	
+	fmt.Println("id : ")
+	fmt.Scan(&id)
+	taskIndex := GetTaskById(id)
+	fmt.Println("=> Current title : ", tasksList[taskIndex].title)
+	
+	fmt.Println("New title : ")
+	reader := bufio.NewReader(os.Stdin)
+	newTitle, _ := reader.ReadString('\n')
+	fmt.Println("=> New title : ",  newTitle, len(newTitle))
+
+	if len(newTitle) < 2 {
+		fmt.Println("No empty title !")
+		UpdateTaskTitle()
+	}else{
+		tasksList[taskIndex].title = newTitle
+		ViewAllTasks()
+		CommandHandler()
+	}
+
+}
+
+func ToggleTaskState(){
+	var id int
+	fmt.Print("id : ")
+	fmt.Scan(&id)
+	taskIndex := GetTaskById(id)
+	tasksList[taskIndex].done = !tasksList[taskIndex].done
+	ViewAllTasks()
+	CommandHandler()
 }
 
 func DeleteTask(){
 	var id int
 	fmt.Print("id : ")
 	fmt.Scan(&id)
-	for i, v := range tasksList {
-		if v.id == id {
-			tasksList = append(tasksList[:i], tasksList[i+1:]...)
-			ViewAllTasks()
-			CommandHandler()
-		}
-	}
+	taskIndex := GetTaskById(id)
+	tasksList = append(tasksList[:taskIndex], tasksList[taskIndex+1:]...)
+	ViewAllTasks()
+	CommandHandler()
 }
 
 func CreateTask() {
@@ -77,13 +134,12 @@ func CreateTask() {
 	fmt.Println("Title : ")
 	reader := bufio.NewReader(os.Stdin)
 	taskTitle, _ := reader.ReadString('\n')
-	fmt.Println("task.title and taskTitle lenght : ", len(task.title), len(taskTitle))
-	task.title = taskTitle
-
+	
 	if len(task.title) == 2 {
-		fmt.Println("task haven't title !")
+		fmt.Println("No empty title !")
 		CreateTask()
 	}else{
+		task.title = taskTitle
 		AddTask(task)
 	}
 	CommandHandler()
