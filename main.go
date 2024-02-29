@@ -3,12 +3,12 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
-	"math/rand"
+	"strings"
 )
 
 type Task struct {
-	id int 
 	title string
 	done bool
 }
@@ -16,28 +16,14 @@ type Task struct {
 func main() {
 	Init()
 	CommandHandler()
+	ViewAllTasks()
 }
 
 var tasksList = []Task {}
-
-func RandomId() int {
-	return rand.Int() / 100000000000000000
-}
-
-func createId() int {
-	// TODO : fix duplicate id by display by index and delete id
-	id := RandomId()
-	isIdExist := GetTaskById(id)
-	if isIdExist != -1 {
-		return id
-	}else{
-		return RandomId()
-	}
-}
+var reader = bufio.NewReader(os.Stdin)
 
 func createFakeTask(title string, done bool){
 	task := Task {
-		id:  createId(),
 		title: title ,
 		done: done,
 	}
@@ -72,55 +58,62 @@ func CommandHandler(){
 	}
 }
 
-func GetTaskById(id int) int{
-	for i, v := range tasksList {
-		if v.id == id {
-			return i
-		}
+func GetTaskByIndex(idx int) Task{
+	return tasksList[idx - 1]
+}
+
+func isValidIndex(index int) bool{
+	// TODO : check bool value
+	if index > len(tasksList) || index < 1{
+		return false
+	}else{
+		return true
 	}
-	return -1
+}
+
+func GetInput(prompt string, r *bufio.Reader) (string, error) {
+	fmt.Println(prompt)
+	input, err := r.ReadString('\n')
+	if err != nil {
+		log.Fatal("Error while reading input!")
+	}
+	return strings.TrimSpace(input), err
+}
+
+func GetInputInt(prompt string, r *bufio.Reader) (int, error) {
+	// TODO : bug : input is 0 or nil
+	fmt.Println(prompt)
+	input, err := fmt.Scanf("\n")
+	if err != nil {
+		log.Fatal("Error while reading input!")
+	}
+	return input, err
+}
+
+func Scan(r rune) {
+	panic("unimplemented")
 }
 
 func UpdateTaskTitle(){
-	// TODO : fix bug user cannot type new title
-	var id int
-	
-	fmt.Println("id : ")
-	fmt.Scan(&id)
-	taskIndex := GetTaskById(id)
-	fmt.Println("=> Current title : ", tasksList[taskIndex].title)
-	
-	fmt.Println("New title : ")
-	reader := bufio.NewReader(os.Stdin)
-	newTitle, _ := reader.ReadString('\n')
-	fmt.Println("=> New title : ",  newTitle, len(newTitle))
-
-	if len(newTitle) < 2 {
-		fmt.Println("No empty title !")
-		UpdateTaskTitle()
-	}else{
-		tasksList[taskIndex].title = newTitle
-		ViewAllTasks()
-		CommandHandler()
-	}
-
+	input, _ := GetInputInt("Index :", reader)
+	fmt.Println("input", input)
+	taskIndex := input - 1
+	newTitle, _ := GetInput("New title :", reader)
+	tasksList[taskIndex].title = newTitle
+	ViewAllTasks()
+	CommandHandler()
 }
 
 func ToggleTaskState(){
-	var id int
-	fmt.Print("id : ")
-	fmt.Scan(&id)
-	taskIndex := GetTaskById(id)
+	taskIndex, _ := GetInputInt("index", reader)
 	tasksList[taskIndex].done = !tasksList[taskIndex].done
 	ViewAllTasks()
 	CommandHandler()
 }
 
 func DeleteTask(){
-	var id int
-	fmt.Print("id : ")
-	fmt.Scan(&id)
-	taskIndex := GetTaskById(id)
+	input, _ := GetInputInt("Index", reader)
+	taskIndex := input - 1
 	tasksList = append(tasksList[:taskIndex], tasksList[taskIndex+1:]...)
 	ViewAllTasks()
 	CommandHandler()
@@ -128,7 +121,6 @@ func DeleteTask(){
 
 func CreateTask() {
 	task := Task{}
-	task.id =  createId()
 	task.done = false
 	
 	fmt.Println("Title : ")
@@ -153,7 +145,7 @@ func AddTask(task Task){
 
 func ViewAllTasks(){
 	fmt.Println("Tasks List:")
-	for _, t := range tasksList {
+	for idx, t := range tasksList {
 		var checkbox string
 		var color string
 		if !t.done {
@@ -163,7 +155,7 @@ func ViewAllTasks(){
 				color = "\033[32m"
 			checkbox = "[x]"
 		}
-		fmt.Println(color + checkbox, t.id, t.title + "\033[0m")
+		fmt.Println(color, idx + 1, checkbox, t.title + "\033[0m")
 	}
 	CommandHandler()
 }
