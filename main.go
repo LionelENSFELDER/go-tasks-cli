@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 )
-
 type Task struct {
 	title string
 	done bool
@@ -81,11 +80,12 @@ func GetInput(prompt string, r *bufio.Reader) (string, error) {
 }
 
 func GetInputInt(prompt string, r *bufio.Reader) (int, error) {
-	// TODO : bug : input is 0 or nil
 	fmt.Println(prompt)
-	input, err := fmt.Scanf("\n")
+	var input int
+	_, err := fmt.Fscanf(r, "%d\n", &input)
 	if err != nil {
 		log.Fatal("Error while reading input!")
+		return 0, err
 	}
 	return input, err
 }
@@ -106,7 +106,7 @@ func UpdateTaskTitle(){
 
 func ToggleTaskState(){
 	taskIndex, _ := GetInputInt("index", reader)
-	tasksList[taskIndex].done = !tasksList[taskIndex].done
+	tasksList[taskIndex - 1].done = !tasksList[taskIndex - 1].done
 	ViewAllTasks()
 	CommandHandler()
 }
