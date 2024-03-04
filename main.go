@@ -61,8 +61,8 @@ func GetTaskByIndex(idx int) Task{
 	return tasksList[idx - 1]
 }
 
-func isValidIndex(index int) bool{
-	// TODO : check bool value
+func isValidIndex(index int) bool {
+	fmt.Println("tasksList length = ", len(tasksList), index > len(tasksList))
 	if index > len(tasksList) || index < 1{
 		return false
 	}else{
@@ -95,26 +95,57 @@ func Scan(r rune) {
 }
 
 func UpdateTaskTitle(){
-	input, _ := GetInputInt("Index :", reader)
-	fmt.Println("input", input)
-	taskIndex := input - 1
+	userInput, err := GetInputInt("Index :", reader)
+	if err != nil {
+		fmt.Println("Error when read index, entrer a valid index !")
+		UpdateTaskTitle()
+	}
+
+	isValidIndex := isValidIndex(userInput)
+	taskIndex := userInput - 1
+	if isValidIndex == false {
+		fmt.Println("Index is not valid !")
+		UpdateTaskTitle()
+	}
+
 	newTitle, _ := GetInput("New title :", reader)
 	tasksList[taskIndex].title = newTitle
+
 	ViewAllTasks()
 	CommandHandler()
 }
 
 func ToggleTaskState(){
-	taskIndex, _ := GetInputInt("index", reader)
+	taskIndex, err := GetInputInt("index", reader)
+	if err != nil {
+		fmt.Println("Error when read index, entrer a valid index !")
+		ToggleTaskState()
+	}
+
+	isValidIndex := isValidIndex(taskIndex)
+	if isValidIndex == false {
+		fmt.Println("Index is not valid !")
+		ToggleTaskState()
+	}
+
 	tasksList[taskIndex - 1].done = !tasksList[taskIndex - 1].done
 	ViewAllTasks()
 	CommandHandler()
 }
 
 func DeleteTask(){
-	input, _ := GetInputInt("Index", reader)
-	taskIndex := input - 1
-	tasksList = append(tasksList[:taskIndex], tasksList[taskIndex+1:]...)
+	taskIndex, err := GetInputInt("Index", reader)
+	if err != nil {
+		fmt.Println("Error when read index, entrer a valid index !")
+		DeleteTask()
+	}
+	isValidIndex := isValidIndex(taskIndex)
+	if isValidIndex == false {
+		fmt.Println("Index is not valid !")
+		DeleteTask()
+	}
+	index := taskIndex - 1
+	tasksList = append(tasksList[:index], tasksList[index+1:]...)
 	ViewAllTasks()
 	CommandHandler()
 }
