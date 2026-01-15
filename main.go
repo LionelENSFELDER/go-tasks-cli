@@ -6,7 +6,9 @@ import (
 	"log"
 	"os"
 	"strings"
+	"go-tasks-cli/db"
 )
+
 type Task struct {
 	title string
 	done bool
@@ -14,6 +16,7 @@ type Task struct {
 
 func main() {
 	Init()
+	db.CheckDatabase()
 	CommandHandler()
 	ViewAllTasks()
 }
