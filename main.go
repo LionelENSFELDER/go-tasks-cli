@@ -9,6 +9,12 @@ import (
 	"go-tasks-cli/db"
 )
 
+// flow: 
+// Init: load config, init const values
+// Check / create database and return data from database
+// view all tasks
+// wait for a command
+
 type Task struct {
 	title string
 	done bool
@@ -17,8 +23,8 @@ type Task struct {
 func main() {
 	Init()
 	db.CheckDatabase()
-	CommandHandler()
 	ViewAllTasks()
+	CommandHandler()
 }
 
 var tasksList = []Task {}
@@ -44,19 +50,21 @@ func CommandHandler(){
 	var userInput string
 	fmt.Println("What do you want to do ?")
 	fmt.Scanln(&userInput)
-	if userInput == "list"{
-		ViewAllTasks()
-	} else if userInput == "add"{
-		CreateTask()
-	} else if userInput == "del"{
-		DeleteTask()
-	} else if userInput == "tog"{
-		ToggleTaskState()
-	} else if userInput == "upd"{
-		UpdateTaskTitle()
-	}else{
-		fmt.Println("Enter a valid command (list, add, del, tog, upd).")
-		CommandHandler()
+
+	switch userInput {
+		case "list":
+			ViewAllTasks()
+		case "add":
+			CreateTask()
+		case "del":
+			DeleteTask()
+		case "tog":
+			ToggleTaskState()
+		case "upd":
+			UpdateTaskTitle()
+		default:
+			fmt.Println("Enter a valid command (list, add, del, tog, upd).")
+			CommandHandler()
 	}
 }
 
