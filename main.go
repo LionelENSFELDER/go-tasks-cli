@@ -161,6 +161,15 @@ func DeleteTask(){
 	CommandHandler()
 }
 
+func isValidTitle(title string) bool{
+	if len(title) <= 1 {
+		fmt.Println(len(title))
+		return true
+	}else{
+		return false
+	}
+}
+
 func CreateTask() {
 	task := Task{}
 	task.done = false
@@ -168,8 +177,9 @@ func CreateTask() {
 	fmt.Println("Title : ")
 	reader := bufio.NewReader(os.Stdin)
 	taskTitle, _ := reader.ReadString('\n')
+	taskTitle = strings.TrimSpace(taskTitle)
 	
-	if len(task.title) == 2 {
+	if isValidTitle(taskTitle) {
 		fmt.Println("No empty title !")
 		CreateTask()
 	}else{
