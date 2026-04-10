@@ -60,10 +60,14 @@ func CommandHandler(){
 			DeleteTask()
 		case "tog":
 			ToggleTaskState()
+		case "togall":
+			toggleAllTasks()
+		case "untogall":
+			untoggleAllTasks()
 		case "upd":
 			UpdateTaskTitle()
 		default:
-			fmt.Println("Enter a valid command (list, add, del, tog, upd).")
+			fmt.Println("Enter a valid command (list, add, del, tog, togall,untogall, upd).")
 			CommandHandler()
 	}
 }
@@ -143,6 +147,21 @@ func ToggleTaskState(){
 	ViewAllTasks()
 	CommandHandler()
 }
+
+func toggleAllTasks(){
+	for idx := range tasksList {
+		tasksList[idx].done = true
+	}
+	CommandHandler()
+}
+
+func untoggleAllTasks(){
+	for idx := range tasksList {
+		tasksList[idx].done = false
+	}
+	CommandHandler()
+}
+
 
 func DeleteTask(){
 	taskIndex, err := GetInputInt("Index", reader)
