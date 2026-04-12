@@ -3,13 +3,14 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"go-tasks-cli/db"
 	"log"
 	"os"
+	"strconv"
 	"strings"
-	"go-tasks-cli/db"
 )
 
-// flow: 
+// flow:
 // Init: load config, init const values
 // Check / create database and return data from database
 // view all tasks
@@ -46,18 +47,79 @@ func Init(){
 	createFakeTask("Learn GO !", true)
 }
 
-func CommandHandler(){
-	var userInput string
-	fmt.Println("What do you want to do ?")
-	fmt.Scanln(&userInput)
+func isValidCommand(cmd string) bool{
+	validCommands := []string{
+		"list", 
+		"add", 
+		"del", 
+		"tog", 
+		"togall", 
+		"untogall", 
+		"upd",
+	}
+	for _, c := range validCommands {
+		if cmd == c {
+			return true
+		}
+	}
+	return false
+}
 
-	switch userInput {
+func isNotEmptyArgs(args []string) bool{
+	if len(args) == 0 {
+		return true
+	}else{
+		return false
+	}
+}
+
+func convertStringToInt(str string) int {
+	num, err := strconv.Atoi(str)
+	if err != nil {
+		log.Fatal("Error while converting string to int !")
+		return 0
+	}
+	return num
+}
+
+
+
+
+func CommandHandler(){
+	// var userInput string
+	fmt.Println("What do you want to do ?")
+	line, _ := reader.ReadString('\n')
+	parts := strings.Fields(strings.TrimSpace(line))
+	if(len(parts) == 0){
+		fmt.Println("Enter a valid command (list, add, del, tog, togall,untogall, upd).")
+		CommandHandler()
+		return
+	}
+	cmd := parts[0]
+	args := parts[1:]
+
+	if cmd == "del" || cmd == "tog" || cmd == "upd" {
+		isNotEmptyArgs := isNotEmptyArgs(args)
+		isValidIndex := isValidIndex(convertStringToInt(args[0]))
+			if isNotEmptyArgs == true {
+				fmt.Println("Enter an index !")
+				CommandHandler()
+				return
+			}
+			if isValidIndex == false {
+				fmt.Println("Index is not valid !")
+				CommandHandler()
+				return
+			}
+	}
+
+	switch cmd {
+		case "del":
+			DeleteTask(convertStringToInt(args[0]))
 		case "list":
 			ViewAllTasks()
 		case "add":
 			CreateTask()
-		case "del":
-			DeleteTask()
 		case "tog":
 			ToggleTaskState()
 		case "togall":
@@ -152,6 +214,7 @@ func toggleAllTasks(){
 	for idx := range tasksList {
 		tasksList[idx].done = true
 	}
+	ViewAllTasks()
 	CommandHandler()
 }
 
@@ -159,22 +222,13 @@ func untoggleAllTasks(){
 	for idx := range tasksList {
 		tasksList[idx].done = false
 	}
+	ViewAllTasks()
 	CommandHandler()
 }
 
 
-func DeleteTask(){
-	taskIndex, err := GetInputInt("Index", reader)
-	if err != nil {
-		fmt.Println("Error when read index, entrer a valid index !")
-		DeleteTask()
-	}
-	isValidIndex := isValidIndex(taskIndex)
-	if isValidIndex == false {
-		fmt.Println("Index is not valid !")
-		DeleteTask()
-	}
-	index := taskIndex - 1
+func DeleteTask(idx int){
+	index := idx - 1
 	tasksList = append(tasksList[:index], tasksList[index+1:]...)
 	ViewAllTasks()
 	CommandHandler()
