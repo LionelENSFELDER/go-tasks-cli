@@ -10,41 +10,28 @@ import (
 	"strings"
 )
 
-// flow:
-// Init: load config, init const values
-// Check / create database and return data from database
-// view all tasks
-// wait for a command
-
-type Task struct {
-	title string
-	done bool
-}
-
 func main() {
-	Init()
+	// Init()
+	fmt.Println("Welcome to GO Tasks CLI !")
 	db.CheckDatabase()
+	tasks, err := db.ReturnDataFromDatabase()
+	if err != nil {
+		log.Fatalf("Error while loading tasks from database: %v", err)
+	}
+	tasksList = tasks
 	ViewAllTasks()
 	CommandHandler()
 }
 
-var tasksList = []Task {}
+var tasksList = []db.Task{}
 var reader = bufio.NewReader(os.Stdin)
 
 func createFakeTask(title string, done bool){
-	task := Task {
-		title: title ,
-		done: done,
+	task := db.Task {
+		Title: title ,
+		Done: done,
 	}
 	tasksList = append(tasksList, task)
-}
-
-func Init(){
-	createFakeTask("Meeting", false)
-	createFakeTask("Get food", false)
-	createFakeTask("Call Lionel Ensfelder", true)
-	createFakeTask("Launch with team", false)
-	createFakeTask("Learn GO !", true)
 }
 
 func isValidCommand(cmd string) bool{
@@ -125,7 +112,7 @@ func CommandHandler(){
 	}
 }
 
-func GetTaskByIndex(idx int) Task{
+func GetTaskByIndex(idx int) db.Task{
 	return tasksList[idx - 1]
 }
 
@@ -164,7 +151,7 @@ func Scan(r rune) {
 
 func toggleAllTasks(){
 	for idx := range tasksList {
-		tasksList[idx].done = true
+		tasksList[idx].Done = true
 	}
 	ViewAllTasks()
 	CommandHandler()
@@ -172,27 +159,31 @@ func toggleAllTasks(){
 
 func untoggleAllTasks(){
 	for idx := range tasksList {
-		tasksList[idx].done = false
+		tasksList[idx].Done = false
 	}
+	db.SaveDataToDatabase(tasksList)
 	ViewAllTasks()
 	CommandHandler()
 }
 
 func UpdateTaskTitle(idx int){
 	newTitle, _ := GetInput("New title :", reader)
-	tasksList[idx - 1].title = newTitle
+	tasksList[idx - 1].Title = newTitle
+	db.SaveDataToDatabase(tasksList)
 	ViewAllTasks()
 	CommandHandler()
 }
 
 func ToggleTaskState(idx int){
-	tasksList[idx - 1].done = !tasksList[idx - 1].done
+	tasksList[idx - 1].Done = !tasksList[idx - 1].Done
+	db.SaveDataToDatabase(tasksList)
 	ViewAllTasks()
 	CommandHandler()
 }
 
 func DeleteTask(idx int){
 	tasksList = append(tasksList[:idx - 1], tasksList[idx:]...)
+	db.SaveDataToDatabase(tasksList)
 	ViewAllTasks()
 	CommandHandler()
 }
@@ -207,8 +198,8 @@ func isValidTitle(title string) bool{
 }
 
 func CreateTask() {
-	task := Task{}
-	task.done = false
+	task := db.Task{}
+	task.Done = false
 	
 	fmt.Println("Title : ")
 	reader := bufio.NewReader(os.Stdin)
@@ -219,14 +210,15 @@ func CreateTask() {
 		fmt.Println("No empty title !")
 		CreateTask()
 	}else{
-		task.title = taskTitle
+		task.Title = taskTitle
 		AddTask(task)
 	}
 	CommandHandler()
 }
 
-func AddTask(task Task){
+func AddTask(task db.Task){
 	tasksList = append(tasksList, task)
+	db.SaveDataToDatabase(tasksList)
 	ViewAllTasks()
 	CommandHandler()
 }
@@ -236,14 +228,14 @@ func ViewAllTasks(){
 	for idx, t := range tasksList {
 		var checkbox string
 		var color string
-		if !t.done {
+		if !t.Done {
 			color = "\033[31m"
 			checkbox = "[ ]"
 			}else{
 				color = "\033[32m"
 			checkbox = "[x]"
 		}
-		fmt.Println(color, idx + 1, checkbox, t.title + "\033[0m")
+		fmt.Println(color, idx + 1, checkbox, t.Title + "\033[0m")
 	}
 	CommandHandler()
 }

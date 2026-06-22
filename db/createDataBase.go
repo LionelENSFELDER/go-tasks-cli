@@ -2,6 +2,7 @@ package db
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"runtime"
 )
@@ -69,46 +70,68 @@ func isDatabaseExist() bool {
     return true
 }
 
-func ReturnDataFromDatabase() []Task {
+func ReturnDataFromDatabase() ([]Task, error) {
     file, err := os.Open(GetDatabasePath())
     if err != nil {
-        panic(err)
+        return nil, fmt.Errorf("Could not open database for reading: %w", err)
     }
     defer file.Close()
 
     decoder := json.NewDecoder(file)
     var data []Task
     if err := decoder.Decode(&data); err != nil {
-        panic(err)
+        return nil, fmt.Errorf("Could not decode database: %w", err)
     }
-    return data
+    return data, nil
 }
 
-func CreateDatabase() {
+func CreateDatabase() error {
     data := []Task{
-        {Title: "Meeting (from database)", Done: false},
-        {Title: "Get food (from database)", Done: true},
-        {Title: "Update obsidian note (from database)", Done: false},
+        {Title: "Create your first task", Done: false},
+        {Title: "Update a task", Done: true},
+        {Title: "Toggle a task", Done: false},
     }
 
     file, err := os.Create(GetDatabasePath())
     if err != nil {
-        panic(err)
+        return fmt.Errorf("Could not create database: %w", err)
     }
     defer file.Close()
     
     encoder := json.NewEncoder(file)
     if err := encoder.Encode(data); err != nil {
-        panic(err)
+        return fmt.Errorf("Could not encode database: %w", err)
     }
+    return nil
 }
 
 // check if database exist and create it if not
 func CheckDatabase() {
-    if !isDatabaseExist() {
+    fmt.Println("Checking database...")
+    currentOS := GetOS()
+    fmt.Printf("Current operating system: %s\n", currentOS)
+    if currentOS != "windows" && currentOS != "linux" && currentOS != "darwin" {
+        println("Unsupported operating system. This application only supports Windows, Linux, and macOS.")
+    }
+    // check if database exist and create it if not
+    isDatabaseExist := isDatabaseExist()
+    fmt.Printf("Database exist: %t, Database path: %s\n", isDatabaseExist, GetDatabasePath())
+    if !isDatabaseExist {
         // display message on console
         println("Database not found, creating database...")
         CreateDatabase()
         println("Database created !")
     }
+}
+
+func SaveDataToDatabase(tasks []Task) error {
+    file, err := os.Create(GetDatabasePath())
+    if err != nil {
+        return fmt.Errorf("Could not open database for writing: %w", err)
+    }
+    defer file.Close()
+
+    encoder := json.NewEncoder(file)
+    encoder.SetIndent("", "  ")
+    return encoder.Encode(tasks)
 }
