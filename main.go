@@ -26,14 +26,6 @@ func main() {
 var tasksList = []db.Task{}
 var reader = bufio.NewReader(os.Stdin)
 
-func createFakeTask(title string, done bool){
-	task := db.Task {
-		Title: title ,
-		Done: done,
-	}
-	tasksList = append(tasksList, task)
-}
-
 func isValidCommand(cmd string) bool{
 	validCommands := []string{
 		"list", 
@@ -153,6 +145,7 @@ func toggleAllTasks(){
 	for idx := range tasksList {
 		tasksList[idx].Done = true
 	}
+	db.SaveDataToDatabase(tasksList)
 	ViewAllTasks()
 	CommandHandler()
 }
