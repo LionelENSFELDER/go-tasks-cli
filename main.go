@@ -8,6 +8,8 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/charmbracelet/lipgloss"
 )
 
 func main() {
@@ -216,19 +218,29 @@ func AddTask(task db.Task){
 	CommandHandler()
 }
 
-func ViewAllTasks(){
-	fmt.Println("Tasks List:")
-	for idx, t := range tasksList {
-		var checkbox string
-		var color string
-		if !t.Done {
-			color = "\033[31m"
-			checkbox = "[ ]"
-			}else{
-				color = "\033[32m"
-			checkbox = "[x]"
-		}
-		fmt.Println(color, idx + 1, checkbox, t.Title + "\033[0m")
-	}
-	CommandHandler()
+
+func ViewAllTasks() {
+		titleStyle := lipgloss.NewStyle().
+				Bold(true).
+				Underline(true).
+				Foreground(lipgloss.Color("5"))
+
+    doneStyle := lipgloss.NewStyle().
+        Strikethrough(true).
+        Foreground(lipgloss.Color("2"))
+
+    pendingStyle := lipgloss.NewStyle().
+        Foreground(lipgloss.Color("White"))
+
+    Title := titleStyle.Render("Tasks List:")
+		fmt.Println(Title)
+    for idx, t := range tasksList {
+        if t.Done {
+            line := doneStyle.Render(fmt.Sprintf("%d %s", idx+1, t.Title))
+            fmt.Println("✓", line)
+        } else {
+            line := pendingStyle.Render(fmt.Sprintf("%d %s", idx+1, t.Title))
+            fmt.Println(" ", line)
+        }
+    }
 }
