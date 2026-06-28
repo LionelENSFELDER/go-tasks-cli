@@ -223,6 +223,32 @@ func AddTask(task db.Task){
 	CommandHandler()
 }
 
+func RenderProgressBar() string {
+	total := len(tasksList)
+	if total == 0 {
+		return "No tasks yet."
+	}
+
+	done := 0
+	for _, t := range tasksList {
+		if t.Done {
+			done++
+		}
+	}
+
+	const width = 30
+	ratio := float64(done) / float64(total)
+	filled := int(ratio * float64(width))
+
+	filledStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("2"))
+	emptyStyle := lipgloss.NewStyle().Foreground(lipgloss.Color("8"))
+
+	bar := filledStyle.Render(strings.Repeat("█", filled)) +
+		emptyStyle.Render(strings.Repeat("░", width-filled))
+
+	percent := int(ratio * 100)
+	return fmt.Sprintf("%s %d%% (%d/%d)", bar, percent, done, total)
+}
 
 func ViewAllTasks() {
 		titleStyle := lipgloss.NewStyle().
@@ -250,4 +276,7 @@ func ViewAllTasks() {
             fmt.Println(" ", line)
         }
     }
+
+    fmt.Println()
+    fmt.Println(RenderProgressBar())
 }
