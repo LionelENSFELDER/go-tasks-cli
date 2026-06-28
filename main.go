@@ -64,7 +64,12 @@ func convertStringToInt(str string) int {
 }
 
 func CommandHandler(){
-	fmt.Println("What do you want to do ?")
+	commandPromptStyle := lipgloss.NewStyle().
+		MarginTop(1).
+		MarginBottom(1).
+		Bold(true).
+		Foreground(lipgloss.Color("5"))
+	fmt.Println(commandPromptStyle.Render("What do you want to do ?"))
 	line, _ := reader.ReadString('\n')
 	parts := strings.Fields(strings.TrimSpace(line))
 
@@ -221,9 +226,11 @@ func AddTask(task db.Task){
 
 func ViewAllTasks() {
 		titleStyle := lipgloss.NewStyle().
-				Bold(true).
-				Underline(true).
-				Foreground(lipgloss.Color("5"))
+			MarginTop(2).
+			MarginBottom(1).
+			Bold(true).
+			Underline(true).
+			Foreground(lipgloss.Color("5"))
 
     doneStyle := lipgloss.NewStyle().
         Strikethrough(true).
