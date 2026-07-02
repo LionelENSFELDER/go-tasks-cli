@@ -267,6 +267,9 @@ func ViewAllTasks() {
 
     Title := titleStyle.Render("Tasks List:")
 		fmt.Println(Title)
+		fmt.Println()
+		fmt.Println(RenderProgressBar())
+		fmt.Println()
     for idx, t := range tasksList {
         if t.Done {
             line := doneStyle.Render(fmt.Sprintf("%d %s", idx+1, t.Title))
@@ -276,7 +279,4 @@ func ViewAllTasks() {
             fmt.Println(" ", line)
         }
     }
-
-    fmt.Println()
-    fmt.Println(RenderProgressBar())
 }
